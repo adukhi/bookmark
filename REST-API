@@ -10,3 +10,8 @@ https://sanghaklee.tistory.com/57
 
 - 버전 협상 지원
    : 오픈 API를 제공하거나, 클라이언트가 항상 최신 버전을 유지할 수 없는 환경이라면 서버에서 버전 협상을 지원해야 합니다. 서버가 버전 협상을 지원한다면 최신 버전으로 업데이트가 되더라도 구 버전의 정보 요청에 하위 호환하게 하여 서비스 적용범위를 넓게 유지할 수 있습니다.
+
+
+
+https://happycoding.io/tutorials/java-server/rest-api
+  : spring 없이 순수 자바로 구현 샘플
