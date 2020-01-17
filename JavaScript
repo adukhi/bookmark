@@ -1,0 +1,65 @@
+https://itstory.tk/entry/%EC%9E%90%EB%B0%94%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8%EC%97%90%EC%84%9C-%EB%A9%94%EB%AA%A8%EB%A6%AC-%EB%88%84%EC%88%98%EC%9D%98-4%EA%B0%80%EC%A7%80-%ED%98%95%ED%83%9C
+
+garbage collected 언어들은 메모리 관리 문제를 “어떤 메모리가 여전히 필요한가?” 에서 “어떤 메모리가 애플리케이션의 다른 코드에서 접근할 수 있는가?”로 관점을 축소할 수 있게 해줍니다. 이 둘의 차이점은 미묘해보이지만 매우 중요합니다. 할당된 메모리가 미래에 사용되는 지의 여부는 오직 개발자만이 알지만, 다른 코드에서 더 이상 접근되지 않은 메모리는 알고리즘적으로 결정할 수 있어 OS에 반환될 수 있도록 표시할 수 있습니다.
+
+Garbage Collected 언어의 메모리 누수의 주요 원인 : 예상치 못한 참조
+
+Garbage Collector 가 해당 메모리가 다른 코드에서 접근될 수 있는지 여부를 판단하는 방법
+  - Mark-and-sweep
+    1. Garbage Collector는 "roots" 목록 생성
+        . 참조가 계속 유지되는 전역변수
+    2. 모든 루트들을 검사해 폐기되지 않도록 활성화 상태로 표시, 자식들도 재귀적으로 검사 및 표시
+    3. 활성화 상태가 아닌 모든 메모리 조각들은 폐기대상으로 판단하여 메모리 해제
+
+예상치 못한 참조 : 개발자는 더 이상 사용되지 않을 것이라 생각했지만, 어떠한 이유로 활성화 상태인 루트 트리 안에 존재하는 메모리 조각
+
+자바스크립트 메모리 누수의 일반적인 3가지 형태
+1. 우발적으로 생성된 전역변수
+  - 선언되지 않은 변수
+   : 선언되지 않은 변수는 global 객체 내에 생성
+   : 브라우저 환경에서 global 객체는 window
+    예) function foo(arg) {
+         bar = "haha";   -> window.bar = "haha"
+        }
+  - this를 통해 우발적인 전역객체 생성
+    예) function foo() {
+          this.variable = "haha";
+	}
+
+	foo();  // foo함수를 호출하면, this는 window 전역객체를 가리킴
+     : 'use strict'; 를 추가하면 자바스크립트 엔진이 우발적인 전역객체생성을 방지해 줌
+  - 명시적 전역 객체
+     : null로 처리하거나 재할당하지 않으면 garbage collector에 수집되지 않음
+        -> 결과적으로 마지막에는 null 처리를 해야 할 듯.
+
+2. 잊혀진 타이머와 콜백
+  : 이제는 브라우저가 알아서 해제시킴
+(나쁜 예)
+var someResource = getData(); 
+setInterval(function() {
+  var node = document.getElementById('Node');
+  if(node) { 
+     // Do stuff with node and someResource. 
+     node.innerHTML = JSON.stringify(someResource));
+  } 
+}, 1000);
+
+(좋은 예)
+var element = document.getElementById('button');
+function onClick(event) {
+  element.innerHtml = 'text'; 
+}
+element.addEventListener('click', onClick);
+// Do stuff
+element.removeEventListener('click', onClick);
+element.parentNode.removeChild(element);
+
+3. DOM 외부에서의 참조
+  : 이해 못 함.
+4. Closures
+  : 상위 스코프의 변수에 접근가능한 Closure
+  : 이해 못 함
+
+Garbage Collectors의 비직관적인 동작
+  : Mark가 된다고 해도 Sweep은 다른 할당이 있을 때만 수행됨.
+  : 다른 할당이 없으면, 현재 메모리 상태가 유지됨
